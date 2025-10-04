@@ -83,4 +83,4 @@ start:
 ;===== Data =====
 my_name db 'Tyumentsev Radomir, 251$'
 end_line db 0Dh, 0Ah, '$' ; Строка с символами перехода на новую строку
-end    start
+end start
