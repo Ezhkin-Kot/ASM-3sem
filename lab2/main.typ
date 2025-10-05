@@ -1,4 +1,5 @@
 #import "conf.typ": conf
+#import "@preview/zebraw:0.5.5": zebraw, zebraw-init, zebraw-themes
 #show: conf.with(
   title: [Лабораторная работа №2],
   type: "pract",
@@ -38,164 +39,178 @@
 
 == Тексты программ на языке ассемблера с комментариями
 
-```asm
-.model tiny               
-.code                     
-org 100h  
+#[
+#set text(size: 12pt)
+#zebraw(
+  numbering: true,
+  lang: false,
+  ```asm
+  .model tiny               
+  .code                     
+  org 100h  
 
-start:
-  ; Вывод фамилии, имени и номера группы
-	mov DX, offset my_name
-	call out_string
-  call new_line
-  
-  mov AX, 1    ; Занесение первой цифры в регистр AX
-  mov BX, 2    ; Занесение второй цифры в регистр BX
-  ; Перевод цифр в коды соответствующих символов ASCII с помощью команды add
-  add AX, 30h  
-  add BX, 30h    
+  start:
+    ; Вывод фамилии, имени и номера группы
+    mov DX, offset my_name
+    call out_string
+    call new_line
+    
+    mov AX, 1    ; Занесение первой цифры в регистр AX
+    mov BX, 2    ; Занесение второй цифры в регистр BX
+    ; Перевод цифр в коды соответствующих символов ASCII с помощью команды add
+    add AX, 30h  
+    add BX, 30h    
 
-  ; Вывод первой цифры
-  mov DX, AX
-  call out_char
+    ; Вывод первой цифры
+    mov DX, AX
+    call out_char
 
-  ; Вывод пробела 
-  call out_space
+    ; Вывод пробела 
+    call out_space
 
-  ; Вывод второй цифры 
-  mov DX, BX
-  call out_char
+    ; Вывод второй цифры 
+    mov DX, BX
+    call out_char
 
-  ; Завершение программы
-	mov AX, 4C00h
-	int 21h
-
-  ; Процедура вывода строки
-	out_string proc
-		mov AH, 09h
-		int 21h
-		ret
-	out_string endp
-
-  ; Процедура вывода символа
-  out_char proc
-    mov AH, 02h
+    ; Завершение программы
+    mov AX, 4C00h
     int 21h
-    ret
-  out_char endp
 
-  ; Процедура вывода пробела
-  out_space proc
-    mov DL, 00h ; Код пробела в ASCII
-    mov AH, 02h
-    int 21h
-    ret
-  out_space endp
+    ; Процедура вывода строки
+    out_string proc
+      mov AH, 09h
+      int 21h
+      ret
+    out_string endp
 
-  ; Процедура перехода на новую строку
-  new_line proc
-    mov DX, offset end_line
-    mov AH, 09h
-    int 21h
-    ret
-  new_line endp
+    ; Процедура вывода символа
+    out_char proc
+      mov AH, 02h
+      int 21h
+      ret
+    out_char endp
 
-;===== Data =====
-my_name db 'Tyumentsev Radomir, 251$'
-end_line db 0Dh, 0Ah, '$' ; Строка с символами перехода на новую строку
-end start
-```
+    ; Процедура вывода пробела
+    out_space proc
+      mov DL, 00h ; Код пробела в ASCII
+      mov AH, 02h
+      int 21h
+      ret
+    out_space endp
+
+    ; Процедура перехода на новую строку
+    new_line proc
+      mov DX, offset end_line
+      mov AH, 09h
+      int 21h
+      ret
+    new_line endp
+
+  ;===== Data =====
+  my_name db 'Tyumentsev Radomir, 251$'
+  end_line db 0Dh, 0Ah, '$' ; Строка с символами перехода на новую строку
+  end start
+  ```
+)
+]
 #text(size: 12pt, align(center)[Текст программы 1])
 #pagebreak(weak: true)
 
-```asm
-.model tiny
-.code
-org    100h
+#[
+#set text(size: 12pt)
+#zebraw(
+  numbering: true,
+  lang: false,
+  ```asm
+  .model tiny
+  .code
+  org    100h
 
-start:
-	;    Вывод фамилии, имени и номера группы
-	mov  DX, offset my_name
-	call out_string
-	call new_line
+  start:
+    ;    Вывод фамилии, имени и номера группы
+    mov  DX, offset my_name
+    call out_string
+    call new_line
 
-	mov AX, 1; Занесение первой цифры в регистр AX
-	mov BX, 2; Занесение второй цифры в регистр BX
-	;   Перевод цифр в коды соответствующих символов ASCII с помощью команды add
-	add AX, 30h
-	add BX, 30h
+    mov AX, 1; Занесение первой цифры в регистр AX
+    mov BX, 2; Занесение второй цифры в регистр BX
+    ;   Перевод цифр в коды соответствующих символов ASCII с помощью команды add
+    add AX, 30h
+    add BX, 30h
 
-	;    Сохранение значения регистра AX в стек
-	;    так как затем в него будут записываться номера функций DOS
-	push AX
+    ;    Сохранение значения регистра AX в стек
+    ;    так как затем в него будут записываться номера функций DOS
+    push AX
 
-	;    Вывод первой цифры
-	mov  DX, AX
-	call out_char
+    ;    Вывод первой цифры
+    mov  DX, AX
+    call out_char
 
-	;    Вывод пробела
-	call out_space
+    ;    Вывод пробела
+    call out_space
 
-	;    Вывод второй цифры
-	mov  DX, BX
-	call out_char
+    ;    Вывод второй цифры
+    mov  DX, BX
+    call out_char
 
-	pop AX; Восстановление значения регистра AX из стека
+    pop AX; Восстановление значения регистра AX из стека
 
-	xchg AX, BX; Обмен значениями регистров AX и BX
+    xchg AX, BX; Обмен значениями регистров AX и BX
 
-	call new_line; Переход на новую строку
+    call new_line; Переход на новую строку
 
-	;    Вывод первой цифры
-	mov  DX, AX
-	call out_char
+    ;    Вывод первой цифры
+    mov  DX, AX
+    call out_char
 
-	;    Вывод пробела
-	call out_space
+    ;    Вывод пробела
+    call out_space
 
-	;    Вывод второй цифры
-	mov  DX, BX
-	call out_char
+    ;    Вывод второй цифры
+    mov  DX, BX
+    call out_char
 
-	;   Завершение программы
-	mov AX, 4C00h
-	int 21h
-
-	;   Процедура вывода строки
-	out_string proc
-    mov AH, 09h
+    ;   Завершение программы
+    mov AX, 4C00h
     int 21h
-    ret
-  out_string endp
 
-	;   Процедура вывода символа
-	out_char proc
-    mov AH, 02h
-    int 21h
-    ret
-  out_char endp
+    ;   Процедура вывода строки
+    out_string proc
+      mov AH, 09h
+      int 21h
+      ret
+    out_string endp
 
-	;   Процедура вывода пробела
-	out_space proc
-    mov DL, 00h; Код пробела в ASCII
-    mov AH, 02h
-    int 21h
-    ret
-  out_space endp
+    ;   Процедура вывода символа
+    out_char proc
+      mov AH, 02h
+      int 21h
+      ret
+    out_char endp
 
-	;   Процедура перехода на новую строку
-	new_line proc
-    mov DX, offset end_line
-    mov AH, 09h
-    int 21h
-    ret
-  new_line endp
+    ;   Процедура вывода пробела
+    out_space proc
+      mov DL, 00h; Код пробела в ASCII
+      mov AH, 02h
+      int 21h
+      ret
+    out_space endp
 
-;===== Data =====
-my_name db 'Tyumentsev Radomir, 251$'
-end_line db 0Dh, 0Ah, '$' ; Строка с символами перехода на новую строку
-end start
-```
+    ;   Процедура перехода на новую строку
+    new_line proc
+      mov DX, offset end_line
+      mov AH, 09h
+      int 21h
+      ret
+    new_line endp
+
+  ;===== Data =====
+  my_name db 'Tyumentsev Radomir, 251$'
+  end_line db 0Dh, 0Ah, '$' ; Строка с символами перехода на новую строку
+  end start
+  ```
+)
+]
 #text(size: 12pt, align(center)[Текст программы 2])
 
 == Скриншоты запуска программ

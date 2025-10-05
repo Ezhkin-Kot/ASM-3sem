@@ -412,7 +412,7 @@
 
       show: thmrules.with(qed-symbol: $square$)
       show heading: self.document.apply_heading_styles
-      show raw.where(block: true): code-block-raw
+      // show raw.where(block: true): code-block-raw
 
       set par(
         // Выравнивание по ширине
