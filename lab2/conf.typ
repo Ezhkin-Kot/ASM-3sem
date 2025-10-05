@@ -72,15 +72,16 @@
 #let space = [ ].func()
 #let sequence = [].func()
 
-#let code_font_size = font_size - 2pt
+#let code_font_size = font_size - 4pt
 // TODO: надо выяснить сколько нужно приплюсовывать к -indent без хардкода
 #let code_block_move = -indent + 11pt
 
 #let code-block-raw(code) = {
   set text(size: code_font_size)
-  // TODO: нужно выяснить почему нужно переоборачивать raw, чтобы размер был
-  // правильным
-  move(dx: code_block_move, zebraw(raw(block: true, code.text)))
+  zebraw(
+      lang: false,
+      code,
+  )
 }
 
 #let code-block(..args, code) = {
