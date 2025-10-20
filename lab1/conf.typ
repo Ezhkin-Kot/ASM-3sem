@@ -457,10 +457,10 @@
 
       // Примерный размер "---". Определено на глаз, как сделать более точным
       // не разбирался.
-      let shift-back-list = 1.5em
-      set list(indent: indent - shift-back-list, marker: [#strong([---])])
-      let shift-back-enum = 1.25em
-      set enum(indent: indent - shift-back-enum)
+      // let shift-back-list = 1.5em
+      // set list(indent: indent - shift-back-list, marker: [#strong([---])])
+      // let shift-back-enum = 1.25em
+      // set enum(indent: indent - shift-back-enum)
 
       // Вывод самого документа
       doc
