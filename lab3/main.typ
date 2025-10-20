@@ -1,7 +1,7 @@
 #import "conf.typ": conf
 #import "@preview/zebraw:0.5.5": zebraw, zebraw-init, zebraw-themes
 #show: conf.with(
-  title: [Лабораторная работа №2],
+  title: [Лабораторная работа №3],
   type: "pract",
   info: (
     author: (
