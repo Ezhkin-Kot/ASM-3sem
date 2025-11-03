@@ -5,7 +5,7 @@
 .data
 	my_name db "Tyumentsev Radomir, 251$"
 	simple dw 20 dup (?) ; Массив из 20 слов (неинициализированный)
-	result db 5 dup (' '), '$' ; Буфер для вывода одного числа: 5 символов + '$' для DOS9
+	result db 5 dup (' '), '$' ; Буфер для вывода одного числа: 5 символов + '$'
 	nl     db 0AH, 0Dh, '$' ; Символы перехода на новую строку
 
 .code
@@ -59,7 +59,7 @@ print_first_row:
 	add  SI, 2
 	loop print_first_row
 
-	;   Перевод строки
+	;   Перенос строки
 	mov AH, 9
 	lea DX, nl
 	int 21h
