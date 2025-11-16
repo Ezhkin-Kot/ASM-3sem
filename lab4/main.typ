@@ -39,10 +39,10 @@
 == Краткий словестный алгоритм программы
 
 + Вывод фамилии, имени и номера группы.
-+ Заполнение в цикле первых 10 элементов массива `simple` чётными числами: от 2 до 20.
-+ Вычисление квадратов этих чисел и заполнение вторых 10 элементов массива `simple` квадратами чётных чисел: от 4 до 400.
-+ Перевод первых 10 элементов массива `simple` в символы ASCII и вывод первой строки чётных чисел.
-+ Перевод первых 10 элементов массива `simple` в символы ASCII и вывод второй строки квадратов чётных чисел.
++ Заполнение массива `simple` через вложенный цикл:
+  + В первой итерации цикла `fill_rows` в цикле `fill_cols` заполняются первые 10 элементов чётными числами.
+  + Во второй итерации цикла `fill_rows` в цикле `fill_cols` заполняются следующие 10 элементов их квадратами.
++ Вывод массива `simple` в две строки через вложенный цикл с переводом чисел в строки ASCII фиксированной длины.
 + Завершение работы программы.
 
 == Текст программы на языке ассемблера с комментариями
@@ -68,98 +68,110 @@ start:
 	mov AH, 09h
 	int 21h
 
-	lea DX, nl
-	mov AH, 09h
-	int 21h
+	call print_new_line
 
-	mov CX, 10; Количество чисел
-	mov BX, 2; Первое число
+	mov CX, 2; Количество строк
 	mov SI, 0; Смещение в байтах (0)
 
-fill_even_loop:
-	mov  simple[SI], BX
-	add  SI, 2
-	add  BX, 2
-	loop fill_even_loop
+  ; Заполнение массива
+  ; Первые 10 элементов - чётные числа, следующие 10 - их квадраты
+  fill_rows:
+    mov BX, 2; Первое число
 
-	;   Заполнение второй половины массива квадратами
-	mov CX, 10
-	mov BX, 2
-	mov SI, 20; Смещение к 11-му элементу (10 слов * 2 байта)
+    fill_cols:
+      mov AX, BX
+      cmp CX, 2
+      je even
+      mul AX; AX = AX * AX (возведение в квадрат)
+      even:
+      mov simple[SI], AX; Занесение числа в массив
+      add SI, 2
+      add BX, 2
+      cmp SI, 20
+      je fill_rows_loop
+      cmp SI, 40
+      je fill_rows_loop
+      jl fill_cols
+      fill_rows_loop:
+        loop fill_rows
 
-fill_sq_loop:
-	mov  AX, BX
-	mul  BX; AX = BX*BX
-	mov  simple[SI], AX
-	add  SI, 2
-	add  BX, 2
-	loop fill_sq_loop
+	mov CX, 2; Количество строк
+	mov SI, 0; Смещение в байтах (0)
 
-	;   Вывод первой строки (чётные числа)
-	mov CX, 10
-	mov SI, 0; Начинаем с первого элемента
+  ; Вывод массива в две строки
+  print_rows:
+    print_cols:
+      mov AX, simple[SI]; Занесение числа из массива в AX
+      call word_asc; Перевод числа в строку ASCII
+      lea DX, result
+      call print_string; Вывод строки
+      add SI, 2
+      cmp SI, 20
+      je print_rows_loop
+      cmp SI, 40
+      je print_rows_end
+      jl print_cols
+      print_rows_loop:
+        call print_new_line
+        loop print_rows
+      print_rows_end: 
 
-print_first_row:
-	mov  AX, simple[SI]
-	mov  BX, 10
-	call word_asc
-	mov  AH, 9
-	lea  DX, result
-	int  21h
-	add  SI, 2
-	loop print_first_row
-
-	;   Перенос строки
-	mov AH, 9
-	lea DX, nl
-	int 21h
-
-	;   Вывод второй строки (квадраты)
-	mov CX, 10
-	mov SI, 20; Начинаем с 11-го элемента
-
-print_second_row:
-	mov  AX, simple[SI]
-	mov  BX, 10
-	call word_asc
-	mov  AH, 9
-	lea  DX, result
-	int  21h
-	add  SI, 2
-	loop print_second_row
-
-	;   Перевод строки
-	mov AH, 9
-	lea DX, nl
-	int 21h
-
-	;   Завершение программы
+	; завершение программы
 	mov AX, 4C00h
 	int 21h
 
+  ; Процедура перевода числа в строку ASCII фиксированной длины
   word_asc proc
     pusha
+    mov BX, 10; Основание системы счисления
     mov SI, 0; Смещение в байтах, изначально 0, затем увеличивается до 5
     mov CX, 5; Длина строки result (5 символов)
 
-  ; Заполняем буфер пробелами для очистки
-  fill_spaces:
-    mov  result[SI], ' '
-    inc  SI
-    loop fill_spaces
+    ; Заполнение буфера result пробелами для его очистки
+    fill_spaces:
+      mov  result[SI], ' '
+      inc  SI
+      loop fill_spaces
 
-  convert_loop:
-    dec SI
-    mov DX, 0
-    div BX; AL = частное, AH = остаток
-    add DL, '0'
-    mov result[SI], DL
-    cmp AX, 0
-    jne convert_loop
+    ; SI = 5
+    ; Заполнение буфера result символами
+    convert_loop:
+      dec SI
+      mov DX, 0; Обнуление прошлого остатка от деления
+      div BX; AX = частное, DX = остаток
+      add DL, '0' ; Добавление кода символа 0 в ASCII
+      mov result[SI], DL; Занесение символа в буфер
+      cmp AX, 0
+      jne convert_loop
 
     popa
     ret
   word_asc endp
+
+  ; Процедура вывода строки, хранящейся в DX
+  print_string proc
+    push AX
+
+    mov AH, 09h
+    int 21h
+
+    pop AX
+    ret
+  print_string endp
+
+  ; Процедура переноса строки
+  print_new_line proc
+    push AX
+    push DX
+
+    lea DX, nl
+    mov AH, 09h
+    int 21h
+
+    pop DX
+    pop AX
+    ret
+  print_new_line endp
 
 end start
 ```
