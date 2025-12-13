@@ -13,14 +13,14 @@ message dw 0422h,044Eh,043Ch,0435h,043Dh,0446h,0435h,0432h,0020h,0420h,0430h,043
 .code
 mainCRTStartup proc
   ; Выравнивание стека по 16 байтовой границе
-  ; 32 байта для параметров MessageBoxW + 8 байтов для установки смещения
+  ; 32 байта для параметров MessageBoxW при вызове + 8 байтов для установки смещения
   sub RSP, 8*5
 
   ; Передача параметров для MessageBoxW
-  xor RCX, RCX
-  lea RDX, message
-  lea R8, caption
-  xor R9, R9
+  xor RCX, RCX ; hWnd окно-предок (значение 0 соответствует рабочему столу)
+  lea RDX, message ; указатель на текст сообщения в теле окна
+  lea R8, caption ; указатель на заголовок окна
+  xor R9, R9 ; тип окна и содержащиеся в нём кнопки (Ok)
 
   ; Вызов MessageBoxW (вариант окна, поддерживаюший UTF-16 LE) 
   call MessageBoxW
@@ -30,3 +30,4 @@ mainCRTStartup proc
   call ExitProcess
 mainCRTStartup endp
 end
+
