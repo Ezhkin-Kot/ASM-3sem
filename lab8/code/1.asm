@@ -10,11 +10,14 @@ STD_INPUT_HANDLE equ -10
 
 hStdInput dq ?
 hStdOutput dq ?
-sum dq ?
+f_value dq ?
+min_value dq ?
 a_prompt db 'a = ', 0
 b_prompt db 'b = ', 0
-sum_message db 'a + b = ', 0
+f_message db 'F = 1Fh - A + B = ', 0
+min_message db 'min(A, B) = ', 0
 invalid_char_message db 'Invalid character', 0
+out_of_range_message db 'Value is out of range', 0
 exit_message db 'Press any key to exit...', 0
 new_line db 0Dh, 0Ah, 0
 
@@ -97,9 +100,6 @@ ReadNumber proc uses RBX RCX RDX R8 R9
       jmp loopString
 
     error:
-      lea RAX, invalid_char_message
-      push RAX
-      call PrintString
       mov R10, 1
       STACKFREE
       ret
@@ -107,7 +107,6 @@ ReadNumber proc uses RBX RCX RDX R8 R9
     scanningComplete:
       mov R10, 0
       mov RAX, RBX
-      ; mov sum, RAX
       STACKFREE
       ret
 ReadNumber endp
@@ -155,25 +154,32 @@ WaitEnter proc uses RAX RCX RDX R8 R9 R10 R11
   local readStr:byte, bytesRead:dword
   STACKALLOC 1
   
-  ; Выводим сообщение 'Press any key to exit...'
-  mov   RCX, hStdOutput
-  lea   RDX, exit_message
-  mov   R8D, 25 ; Длина строки 'Press any key to exit...'
-  lea   R9, bytesRead
+  ; Вывод сообщения 'Press any key to exit...'
+  mov RCX, hStdOutput
+  lea RDX, exit_message
+  mov R8D, 25 ; Длина строки 'Press any key to exit...'
+  lea R9, bytesRead
   NULL_FIFTH_ARG
-  call  WriteConsoleA
+  call WriteConsoleA
 
-  ; Ожидаем ввода одного символа
-  mov   RCX, hStdInput
-  lea   RDX, readStr
-  mov   R8D, 1
-  lea   R9, bytesRead
+  ; Ожидание ввода одного символа
+  mov RCX, hStdInput
+  lea RDX, readStr
+  mov R8D, 1
+  lea R9, bytesRead
   NULL_FIFTH_ARG
-  call  ReadConsoleA
+  call ReadConsoleA
 
   STACKFREE
   ret
 WaitEnter endp
+
+PrintNewLine proc
+  lea RAX, new_line
+  push RAX
+  call PrintString
+  ret
+PrintNewLine endp
 
 mainCRTStartup proc
   STACKALLOC 0
@@ -192,7 +198,11 @@ mainCRTStartup proc
 
   call ReadNumber
   cmp R10, 1; Проверка флага ошибки из ReadNumber
-  je exit_proc; Если ошибка, переход к завершению
+  je invalid_char_exception; Если ошибка, переход к завершению
+  cmp RAX, 32767
+  jg out_of_range_exception
+  cmp RAX, -32768
+  jl out_of_range_exception
   mov R8, RAX; Сохранение первого числа в R8
 
   lea RAX, b_prompt
@@ -201,23 +211,55 @@ mainCRTStartup proc
 
   call ReadNumber
   cmp R10, 1; Проверка флага ошибки
-  je exit_proc; Если ошибка, переход к завершению
-  
-  add R8, RAX; Прибавление второго числа (в RAX) к первому (в R8)
+  je invalid_char_exception; Если ошибка, переход к завершению
+  cmp RAX, 32767
+  jg out_of_range_exception
+  cmp RAX, -32768
+  jl out_of_range_exception
+  mov R9, RAX; Сохранение второго числа в R9
 
-  lea RAX, sum_message
+  cmp R8, R9
+  jg R9_is_min
+  mov min_value, R8
+  jmp R8_is_min
+  R9_is_min:
+  mov min_value, R9
+  R8_is_min:
+ 
+  lea RAX, f_message
   push RAX
   call PrintString
 
-  mov RAX, R8; Перемещение суммы в RAX для вывода
-  push RAX
+  add R8, R9
+  add R8, 1Fh
+  mov f_value, R8; Перемещение суммы в RAX для вывода
+  push f_value
   call PrintNumber
 
-  lea RAX, new_line
+  call PrintNewLine
+
+  lea RAX, min_message
   push RAX
   call PrintString
 
+  push min_value
+  call PrintNumber
+
+  jmp exit_proc
+
+  invalid_char_exception:
+    lea RAX, invalid_char_message
+    push RAX
+    call PrintString
+    jmp exit_proc
+
+  out_of_range_exception:
+    lea RAX, out_of_range_message
+    push RAX
+    call PrintString
+
   exit_proc:
+    call PrintNewLine
     call WaitEnter
     STACKFREE
     xor RCX, RCX; Код завершения 0
